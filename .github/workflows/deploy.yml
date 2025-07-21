@@ -1,37 +1,23 @@
-name: Deploy to EC2 Nginx Server
+name: Test SSH Connection
 
 on:
   push:
     branches:
-      - main  # Change to your deploy branch if different
+      - prod
 
 jobs:
-  deploy:
+  ssh-test:
     runs-on: ubuntu-latest
+    environment: prod
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Clean Nginx folder on server
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        port: 22
-        script: |
-          sudo rm -rf /usr/share/nginx/html/*
-          sudo mkdir -p /usr/share/nginx/html
-          sudo chown $USER:$USER /usr/share/nginx/html
-
-    - name: Copy files to EC2
-      uses: appleboy/scp-action@v0.1.7
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        port: 22
-        source: "."                      # or "build/" if you're deploying frontend assets
-        target: "/usr/share/nginx/html"
-        strip_components: 0
+      - name: Test SSH echo
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          port: 22
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            echo "Connected to host: $HOSTNAME"
+            echo "Running as user: $(whoami)"
